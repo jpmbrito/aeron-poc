@@ -1,0 +1,47 @@
+services:
+  consumer:
+    build:
+      context: .
+      target: demo
+    network_mode: host
+    shm_size: "256m"
+    environment:
+      - MESSAGE_COUNT=${MESSAGE_COUNT:-10000}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        rm -rf /dev/shm/aeron-udp-consumer
+        AERON_DIR=/dev/shm/aeron-udp-consumer aeronmd &
+        sleep 2
+        echo "=== Consumer waiting on UDP localhost:40123 ==="
+        AERON_DIR=/dev/shm/aeron-udp-consumer consumer \
+          --channel "aeron:udp?endpoint=localhost:40123" \
+          --stream-id 1001 \
+          --messages $${MESSAGE_COUNT} \
+          --timeout 30
+        echo "=== Consumer done ==="
+
+  producer:
+    build:
+      context: .
+      target: demo
+    network_mode: host
+    shm_size: "256m"
+    environment:
+      - MESSAGE_COUNT=${MESSAGE_COUNT:-10000}
+    depends_on:
+      - consumer
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        sleep 5
+        rm -rf /dev/shm/aeron-udp-producer
+        AERON_DIR=/dev/shm/aeron-udp-producer aeronmd &
+        sleep 2
+        echo "=== Producer sending to UDP localhost:40123 ==="
+        AERON_DIR=/dev/shm/aeron-udp-producer producer \
+          --channel "aeron:udp?endpoint=localhost:40123" \
+          --stream-id 1001 \
+          --messages $${MESSAGE_COUNT}
+        echo "=== Producer done ==="
+        sleep 5

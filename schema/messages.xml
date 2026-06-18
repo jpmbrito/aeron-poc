@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SBE schema - to be fully defined in task 1.2 -->
+<sbe:messageSchema xmlns:sbe="http://fixprotocol.io/2016/sbe"
+                   package="aeron_poc"
+                   id="1"
+                   version="1"
+                   semanticVersion="1.0.0"
+                   byteOrder="littleEndian">
+
+    <types>
+        <composite name="messageHeader" description="Message identifiers and length of message root.">
+            <type name="blockLength" primitiveType="uint16"/>
+            <type name="templateId" primitiveType="uint16"/>
+            <type name="schemaId" primitiveType="uint16"/>
+            <type name="version" primitiveType="uint16"/>
+        </composite>
+        <type name="fixedLenStr8" primitiveType="char" length="8"/>
+    </types>
+
+    <sbe:message name="MarketData" id="1" blockLength="36">
+        <field name="sequenceNumber" id="1" type="uint64" offset="0"/>
+        <field name="timestamp"      id="2" type="int64"  offset="8"/>
+        <field name="price"          id="3" type="double" offset="16"/>
+        <field name="quantity"       id="4" type="uint32" offset="24"/>
+        <field name="symbol"         id="5" type="fixedLenStr8" offset="28"/>
+    </sbe:message>
+</sbe:messageSchema>
